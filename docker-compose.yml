@@ -6,7 +6,7 @@ services:
     container_name: whisper-0
     expose:
       - "7000"
-    command: whispering --language en --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7000 --device cuda --debug
+    command: whispering --language ${WHISPER_LANGUAGE} --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7000 --device cuda --debug
     volumes:
       - ~/.cache/whisper:/root/.cache/whisper/:ro
     deploy:
@@ -22,7 +22,7 @@ services:
     container_name: whisper-1
     expose:
       - "7001"
-    command: whispering --language en --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7001 --device cuda --debug
+    command: whispering --language ${WHISPER_LANGUAGE} --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7001 --device cuda --debug
     volumes:
       - ~/.cache/whisper:/root/.cache/whisper/:ro
     deploy:
@@ -38,7 +38,7 @@ services:
     container_name: whisper-2
     expose:
       - "7002"
-    command: whispering --language en --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7002 --device cuda --debug
+    command: whispering --language ${WHISPER_LANGUAGE} --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7002 --device cuda --debug
     volumes:
       - ~/.cache/whisper:/root/.cache/whisper/:ro
     deploy:
@@ -54,7 +54,7 @@ services:
     container_name: whisper-3
     expose:
       - "7003"
-    command: whispering --language en --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7003 --device cuda --debug
+    command: whispering --language ${WHISPER_LANGUAGE} --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7003 --device cuda --debug
     volumes:
       - ~/.cache/whisper:/root/.cache/whisper/:ro
     deploy:
