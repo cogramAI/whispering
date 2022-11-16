@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import asyncio
 import base64
 import json
@@ -24,7 +22,6 @@ async def serve_with_websocket_main(websocket):
     idx: int = 0
     ctx: Optional[Context] = None
 
-    j = 0
     while True:
         logger.debug(f"Audio #: {idx}")
         try:
@@ -33,10 +30,6 @@ async def serve_with_websocket_main(websocket):
             break
 
         force_padding = False
-
-        logger.debug(f"j={j}, padding={force_padding}")
-
-        j += 1
 
         if isinstance(message, str) and not ctx:
             logger.debug(f"Got str: {message}")
@@ -96,19 +89,13 @@ async def serve_with_websocket_main(websocket):
 
         audio = np.frombuffer(message, dtype=np.dtype(ctx.data_type)).astype(np.float32)
 
-        k = 0
-
         for chunk in g_wsp.transcribe(
             audio=audio, ctx=ctx, force_padding=force_padding  # type: ignore
         ):
-            cjs = json.loads(chunk.json())
-
-            logger.debug(f"k={k}, padding={force_padding}")
-            await websocket.send(json.dumps(cjs))
-            k += 1
+            await websocket.send(json.dumps(json.loads(chunk.json())))
 
         if force_padding:
-            await websocket.send(json.dumps({"close_connection": force_padding}))
+            await websocket.send(json.dumps({"close_connection": True}))
 
         idx += 1
 

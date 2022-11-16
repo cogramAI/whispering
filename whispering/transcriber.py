@@ -299,7 +299,9 @@ class WhisperStreamingTranscriber:
                 ctx=ctx,
             )
             logger.debug(
-                f"Result: temperature={result.temperature:.2f}, no_speech_prob={result.no_speech_prob:.2f}, "
+                f"Result: "
+                f"temperature={result.temperature:.2f}, "
+                f"no_speech_prob={result.no_speech_prob:.2f}, "
                 f"avg_logprob={result.avg_logprob:.2f}"
             )
 
