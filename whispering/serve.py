@@ -2,7 +2,10 @@ import asyncio
 import base64
 import json
 from logging import getLogger
+from typing import Any
+from typing import Dict
 from typing import Final, Optional
+from typing import Union
 
 import numpy as np
 import websockets
@@ -16,6 +19,13 @@ logger = getLogger(__name__)
 
 MIN_PROTOCOL_VERSION: Final[int] = int("000_006_000")
 MAX_PROTOCOL_VERSION: Final[int] = CURRENT_PROTOCOL_VERSION
+
+
+def deserialize_message(message: Union[str, bytes]) -> Dict[str, Any]:
+    if isinstance(message, bytes):
+        message = message.decode("utf-8")
+
+    return json.loads(message)
 
 
 async def serve_with_websocket_main(websocket):
@@ -34,12 +44,20 @@ async def serve_with_websocket_main(websocket):
 
         speaker = None
 
-        logger.debug(f"Audio #: {idx} -- {type(message)} and ctx {ctx}")
+        try:
+            message = deserialize_message(message)
+        except Exception as e:
+            logger.exception(f"Failed to deserialize message: {e}")
+            continue
 
-        if isinstance(message, str) and not ctx:
-            logger.debug(f"Got str: {message}")
-            d = json.loads(message)
-            v = d.get("context")
+        logger.debug(
+            f"Audio #: {idx} -- "
+            f"message type={type(message)} and `bool(ctx)`={bool(ctx)}"
+        )
+
+        if "context" in message and not ctx:
+            logger.debug(f"Got context: {message}")
+            v = message["context"]
             if v is not None:
                 ctx = Context.parse_obj(v)
             else:
@@ -72,25 +90,21 @@ async def serve_with_websocket_main(websocket):
 
             continue
 
-        elif isinstance(message, str) and ctx:
-            d = json.loads(message)
-
-            speaker = d.get("speaker")
-            logger.info(f"Speaker: {speaker}")
-            if d.get("begin_new_speaker"):
-                logger.warning(f"Received `begin_new_speaker`")
-                message = b""
-                force_padding = True
-
-            else:
-                message = base64.b64decode(d.get("b64_encoded_audio", ""))
-
         if ctx is None:
             await websocket.send(json.dumps({"error": "no context"}))
             return
 
-        logger.debug(f"Processing audio of length {len(message)}")
-        audio = np.frombuffer(message, dtype=np.dtype(ctx.data_type)).astype(np.float32)
+        speaker = message.get("speaker")
+        logger.info(f"Speaker: {speaker}")
+        if message.get("begin_new_speaker"):
+            logger.warning(f"Received `begin_new_speaker`")
+            force_padding = True
+
+        audio_bytes = base64.b64decode(message.get("b64_encoded_audio", ""))
+        logger.debug(f"Processing audio of length {len(audio_bytes)}")
+        audio = np.frombuffer(audio_bytes, dtype=np.dtype(ctx.data_type)).astype(
+            np.float32
+        )
 
         for chunk in g_wsp.transcribe(
             audio=audio, ctx=ctx, speaker=speaker, force_padding=force_padding  # type: ignore
