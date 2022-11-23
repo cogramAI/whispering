@@ -109,9 +109,10 @@ async def serve_with_websocket_main(websocket):
         for chunk in g_wsp.transcribe(
             audio=audio, ctx=ctx, speaker=speaker, force_padding=force_padding  # type: ignore
         ):
-            chunk: ParsedChunk
-            logger.debug(f"Returning chunk: {chunk.json()}")
-            await websocket.send(chunk.json())
+            if chunk:
+                chunk: ParsedChunk
+                logger.debug(f"Returning chunk: {chunk.json()}")
+                await websocket.send(chunk.json())
         #
         # if force_padding:
         #     await websocket.send(json.dumps({"close_connection": True}))

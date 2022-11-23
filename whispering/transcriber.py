@@ -226,6 +226,21 @@ class WhisperStreamingTranscriber:
             ctx.buffer_tokens = []
         logger.debug(f"Length of buffer: {len(ctx.buffer_tokens)}")
 
+    def get_vad(self, audio, total_block_number, threshold):
+
+        try:
+            return [
+                v
+                for v in self.vad(
+                    audio=audio,
+                    total_block_number=total_block_number,
+                    threshold=threshold,
+                )
+            ]
+        except Exception as e:
+            logger.exception(f"VAD error: {e}")
+            return []
+
     def transcribe(
         self,
         *,
@@ -237,14 +252,10 @@ class WhisperStreamingTranscriber:
         logger.debug(f"{len(audio)}")
 
         if ctx.vad_threshold > 0.0:
-            x = [
-                v
-                for v in self.vad(
-                    audio=audio,
-                    total_block_number=1,
-                    threshold=ctx.vad_threshold,
-                )
-            ]
+            x = self.get_vad(
+                audio=audio, total_block_number=1, threshold=ctx.vad_threshold
+            )
+
             if len(x) == 0:  # No speech
                 logger.debug("No speech")
                 ctx.timestamp += len(audio) / N_FRAMES * self.duration_pre_one_mel
