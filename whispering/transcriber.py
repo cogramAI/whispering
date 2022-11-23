@@ -227,7 +227,12 @@ class WhisperStreamingTranscriber:
         logger.debug(f"Length of buffer: {len(ctx.buffer_tokens)}")
 
     def transcribe(
-        self, *, audio: np.ndarray, ctx: Context, force_padding: bool = False
+        self,
+        *,
+        audio: np.ndarray,
+        ctx: Context,
+        force_padding: bool = False,
+        speaker: Optional[str] = None,
     ) -> Iterator[ParsedChunk]:
         logger.debug(f"{len(audio)}")
 
@@ -326,6 +331,7 @@ class WhisperStreamingTranscriber:
                 if isinstance(v, int):
                     last_timestamp_position = v
                 else:
+                    v.speaker = speaker
                     yield v
             if last_timestamp_position is None:
                 seek += segment.shape[-1]

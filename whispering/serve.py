@@ -74,33 +74,25 @@ async def serve_with_websocket_main(websocket):
 
             speaker = d.get("speaker")
             logger.info(f"Speaker: {speaker}")
-            if "last_message" in d:
-                logger.warning(f"Received last message")
+            if d.get("begin_new_speaker"):
+                logger.warning(f"Received `begin_new_speaker`")
                 message = b""
                 force_padding = True
 
             else:
                 message = base64.b64decode(d.get("b64_encoded_audio", ""))
-                logger.debug(f"Received regular audio message of size {len(message)}")
+                logger.debug(f"Received audio message of size {len(message)}")
 
         if ctx is None:
-            await websocket.send(
-                json.dumps(
-                    {
-                        "error": "no context",
-                    }
-                )
-            )
+            await websocket.send(json.dumps({"error": "no context"}))
             return
 
         audio = np.frombuffer(message, dtype=np.dtype(ctx.data_type)).astype(np.float32)
 
         for chunk in g_wsp.transcribe(
-            audio=audio, ctx=ctx, force_padding=force_padding  # type: ignore
+            audio=audio, ctx=ctx, spekaer=speaker, force_padding=force_padding  # type: ignore
         ):
-            _chunk = json.loads(chunk.json())
-            _chunk["speaker"] = speaker
-            await websocket.send(json.dumps(_chunk))
+            await websocket.send(json.dumps(json.loads(chunk.json())))
         #
         # if force_padding:
         #     await websocket.send(json.dumps({"close_connection": True}))
