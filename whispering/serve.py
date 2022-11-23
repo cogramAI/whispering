@@ -7,6 +7,7 @@ from typing import Final, Optional
 import numpy as np
 import websockets
 from websockets.exceptions import ConnectionClosedOK
+from whispering.schema import ParsedChunk
 
 from whispering.schema import CURRENT_PROTOCOL_VERSION, Context
 from whispering.transcriber import WhisperStreamingTranscriber
@@ -23,7 +24,7 @@ async def serve_with_websocket_main(websocket):
     ctx: Optional[Context] = None
 
     while True:
-        logger.debug(f"Audio #: {idx}")
+
         try:
             message = await websocket.recv()
         except ConnectionClosedOK:
@@ -32,6 +33,10 @@ async def serve_with_websocket_main(websocket):
         force_padding = False
 
         speaker = None
+
+        logger.debug(
+            f"Audio #: {idx} -- {isinstance(message, str)} and ctx {bool(ctx)}"
+        )
 
         if isinstance(message, str) and not ctx:
             logger.debug(f"Got str: {message}")
@@ -81,18 +86,20 @@ async def serve_with_websocket_main(websocket):
 
             else:
                 message = base64.b64decode(d.get("b64_encoded_audio", ""))
-                logger.debug(f"Received audio message of size {len(message)}")
 
         if ctx is None:
             await websocket.send(json.dumps({"error": "no context"}))
             return
 
+        logger.debug(f"Processing audio of length {len(message)}")
         audio = np.frombuffer(message, dtype=np.dtype(ctx.data_type)).astype(np.float32)
 
         for chunk in g_wsp.transcribe(
             audio=audio, ctx=ctx, speaker=speaker, force_padding=force_padding  # type: ignore
         ):
-            await websocket.send(json.dumps(json.loads(chunk.json())))
+            chunk: ParsedChunk
+            logger.debug(f"Returning chunk: {chunk.json()}")
+            await websocket.send(chunk.json())
         #
         # if force_padding:
         #     await websocket.send(json.dumps({"close_connection": True}))
