@@ -56,18 +56,12 @@ async def serve_with_websocket_main(websocket):
         )
 
         if "context" in message and not ctx:
-            logger.debug(f"Got context: {message}")
             v = message["context"]
+            logger.debug(f"Got context for bot ID {message.get('bot_id')}: {v}")
             if v is not None:
                 ctx = Context.parse_obj(v)
             else:
-                await websocket.send(
-                    json.dumps(
-                        {
-                            "error": "unsupported message",
-                        }
-                    )
-                )
+                await websocket.send(json.dumps({"error": "unsupported message"}))
                 return
 
             if ctx.protocol_version < MIN_PROTOCOL_VERSION:
@@ -95,23 +89,30 @@ async def serve_with_websocket_main(websocket):
             return
 
         speaker = message.get("speaker")
+        bot_id = message.get("bot_id")
         logger.info(f"Speaker: {speaker}")
         if message.get("begin_new_speaker"):
-            logger.warning(f"Received `begin_new_speaker`")
+            logger.warning(f"Received `begin_new_speaker` for bot ID {bot_id}")
             force_padding = True
 
         audio_bytes = base64.b64decode(message.get("b64_encoded_audio", ""))
-        logger.debug(f"Processing audio of length {len(audio_bytes)}")
+        logger.debug(
+            f"Processing audio of length {len(audio_bytes)} for bot ID {bot_id}"
+        )
         audio = np.frombuffer(audio_bytes, dtype=np.dtype(ctx.data_type)).astype(
             np.float32
         )
 
         for chunk in g_wsp.transcribe(
-            audio=audio, ctx=ctx, speaker=speaker, force_padding=force_padding  # type: ignore
+            audio=audio,
+            ctx=ctx,
+            speaker=speaker,
+            bot_id=bot_id,
+            force_padding=force_padding,  # type: ignore
         ):
             if chunk:
                 chunk: ParsedChunk
-                logger.debug(f"Returning chunk: {chunk.json()}")
+                logger.debug(f"Returning chunk for bot ID {bot_id}: {chunk.json()}")
                 await websocket.send(chunk.json())
         #
         # if force_padding:

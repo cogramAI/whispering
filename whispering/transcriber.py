@@ -248,6 +248,7 @@ class WhisperStreamingTranscriber:
         ctx: Context,
         force_padding: bool = False,
         speaker: Optional[str] = None,
+        bot_id: Optional[str] = None,
     ) -> Iterator[ParsedChunk]:
         logger.debug(f"{len(audio)}")
 
@@ -343,6 +344,7 @@ class WhisperStreamingTranscriber:
                     last_timestamp_position = v
                 else:
                     v.speaker = speaker
+                    v.bot_id = bot_id
                     yield v
             if last_timestamp_position is None:
                 seek += segment.shape[-1]
