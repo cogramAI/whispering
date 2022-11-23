@@ -31,6 +31,8 @@ async def serve_with_websocket_main(websocket):
 
         force_padding = False
 
+        speaker = None
+
         if isinstance(message, str) and not ctx:
             logger.debug(f"Got str: {message}")
             d = json.loads(message)
@@ -69,14 +71,18 @@ async def serve_with_websocket_main(websocket):
 
         elif isinstance(message, str) and ctx:
             d = json.loads(message)
-            logger.warning(f"Received last message")
+
+            speaker = d.get("speaker")
+            logger.info(f"Speaker: {speaker}")
             if "last_message" in d:
-                # b64-decode message
-                message = base64.b64decode(d["last_message"])
+                logger.warning(f"Received last message")
+                message = b""
+                force_padding = True
 
-            force_padding = True
+            else:
+                message = base64.b64decode(d.get("b64_encoded_audio", ""))
+                logger.debug(f"Received regular audio message of size {len(message)}")
 
-        logger.debug(f"Message size: {len(message)}")
         if ctx is None:
             await websocket.send(
                 json.dumps(
@@ -92,10 +98,12 @@ async def serve_with_websocket_main(websocket):
         for chunk in g_wsp.transcribe(
             audio=audio, ctx=ctx, force_padding=force_padding  # type: ignore
         ):
-            await websocket.send(json.dumps(json.loads(chunk.json())))
-
-        if force_padding:
-            await websocket.send(json.dumps({"close_connection": True}))
+            _chunk = json.loads(chunk.json())
+            _chunk["speaker"] = speaker
+            await websocket.send(json.dumps(_chunk))
+        #
+        # if force_padding:
+        #     await websocket.send(json.dumps({"close_connection": True}))
 
         idx += 1
 
