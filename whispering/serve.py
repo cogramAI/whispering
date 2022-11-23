@@ -90,7 +90,7 @@ async def serve_with_websocket_main(websocket):
         audio = np.frombuffer(message, dtype=np.dtype(ctx.data_type)).astype(np.float32)
 
         for chunk in g_wsp.transcribe(
-            audio=audio, ctx=ctx, spekaer=speaker, force_padding=force_padding  # type: ignore
+            audio=audio, ctx=ctx, speaker=speaker, force_padding=force_padding  # type: ignore
         ):
             await websocket.send(json.dumps(json.loads(chunk.json())))
         #
