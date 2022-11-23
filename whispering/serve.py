@@ -34,9 +34,7 @@ async def serve_with_websocket_main(websocket):
 
         speaker = None
 
-        logger.debug(
-            f"Audio #: {idx} -- {isinstance(message, str)} and ctx {bool(ctx)}"
-        )
+        logger.debug(f"Audio #: {idx} -- {type(message)} and ctx {ctx}")
 
         if isinstance(message, str) and not ctx:
             logger.debug(f"Got str: {message}")
