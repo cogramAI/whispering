@@ -69,6 +69,9 @@ services:
     image: nginx:latest
     volumes:
       - ./deployment/nginx.conf:/etc/nginx/nginx.conf:ro
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
     depends_on:
       - whisper-0
       - whisper-1
