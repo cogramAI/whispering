@@ -28,6 +28,9 @@ def deserialize_message(message: Union[str, bytes]) -> Dict[str, Any]:
     return json.loads(message)
 
 
+hard_coded_context_vars = {"compression_ratio_threshold": 1.2}
+
+
 async def serve_with_websocket_main(websocket):
     global g_wsp
     idx: int = 0
@@ -59,6 +62,11 @@ async def serve_with_websocket_main(websocket):
             v = message["context"]
             logger.debug(f"Got context for bot ID {message.get('bot_id')}: {v}")
             if v is not None:
+                logger.debug(
+                    f"Updating received context with hard-coded values: "
+                    f"{hard_coded_context_vars}"
+                )
+                v.update(hard_coded_context_vars)
                 ctx = Context.parse_obj(v)
             else:
                 await websocket.send(json.dumps({"error": "unsupported message"}))
