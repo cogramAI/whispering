@@ -28,7 +28,10 @@ def deserialize_message(message: Union[str, bytes]) -> Dict[str, Any]:
     return json.loads(message)
 
 
-hard_coded_context_vars = {"compression_ratio_threshold": 1.2}
+hard_coded_context_vars = {
+    "compression_ratio_threshold": 2.4,
+    "temperature": [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+}
 
 
 async def serve_with_websocket_main(websocket):
