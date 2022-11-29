@@ -285,7 +285,8 @@ class WhisperStreamingTranscriber:
                     or ctx.nosoeech_skip_count <= ctx.max_nospeech_skip
                 ):
                     logger.debug(
-                        f"nosoeech_skip_count: {ctx.nosoeech_skip_count} (<= {ctx.max_nospeech_skip})"
+                        f"nospeech_skip_count: {ctx.nosoeech_skip_count} "
+                        f"(<= {ctx.max_nospeech_skip})"
                     )
                     return
                 ctx.nosoeech_skip_count = None

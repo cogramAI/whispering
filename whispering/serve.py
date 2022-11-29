@@ -149,6 +149,9 @@ async def serve_with_websocket(
             host=host,
             port=port,
             max_size=999999999,
+            ping_interval=5,
+            ping_timeout=6000,
+            max_queue=999999999,
         ):
             await asyncio.Future()
     except KeyboardInterrupt:
