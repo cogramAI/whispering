@@ -9,6 +9,7 @@ services:
     command: whispering --language ${WHISPER_LANGUAGE} --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7000 --device cuda --debug
     volumes:
       - ~/.cache/whisper:/root/.cache/whisper/:ro
+      - ./data:/app/data/
     build:
       context: .
       dockerfile: deployment/Dockerfile
@@ -28,6 +29,7 @@ services:
     command: whispering --language ${WHISPER_LANGUAGE} --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7001 --device cuda --debug
     volumes:
       - ~/.cache/whisper:/root/.cache/whisper/:ro
+      - ./data:/app/data/
     build:
       context: .
       dockerfile: deployment/Dockerfile
@@ -47,6 +49,7 @@ services:
     command: whispering --language ${WHISPER_LANGUAGE} --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7002 --device cuda --debug
     volumes:
       - ~/.cache/whisper:/root/.cache/whisper/:ro
+      - ./data:/app/data/
     build:
       context: .
       dockerfile: deployment/Dockerfile
@@ -81,6 +84,7 @@ services:
     image: nginx:latest
     volumes:
       - ./deployment/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./data:/app/data/
     depends_on:
       - whisper-0
       - whisper-1

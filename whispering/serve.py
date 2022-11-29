@@ -1,7 +1,9 @@
 import asyncio
 import base64
 import json
+from datetime import datetime
 from logging import getLogger
+from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import Final, Optional
@@ -11,6 +13,7 @@ import numpy as np
 import websockets
 from websockets.exceptions import ConnectionClosedOK
 from whispering.schema import ParsedChunk
+import soundfile as sf
 
 from whispering.schema import CURRENT_PROTOCOL_VERSION, Context
 from whispering.transcriber import WhisperStreamingTranscriber
@@ -34,10 +37,18 @@ hard_coded_context_vars = {
 }
 
 
+def np_array_to_wav_file(
+    _audio_bytes, output_file: Path, sample_rate: int = 16000
+) -> None:
+    sf.write(output_file, _audio_bytes, sample_rate)
+
+
 async def serve_with_websocket_main(websocket):
     global g_wsp
     idx: int = 0
     ctx: Optional[Context] = None
+
+    collected_audio_bytes = b""
 
     while True:
 
@@ -114,6 +125,8 @@ async def serve_with_websocket_main(websocket):
             np.float32
         )
 
+        collected_audio_bytes += audio_bytes
+
         for chunk in g_wsp.transcribe(
             audio=audio,
             ctx=ctx,
@@ -125,11 +138,26 @@ async def serve_with_websocket_main(websocket):
                 chunk: ParsedChunk
                 logger.debug(f"Returning chunk for bot ID {bot_id}: {chunk.json()}")
                 await websocket.send(chunk.json())
+
         #
         # if force_padding:
         #     await websocket.send(json.dumps({"close_connection": True}))
 
         idx += 1
+
+    logger.debug(f"Finished processing audio for bot.")
+    full_bytes = np.frombuffer(
+        collected_audio_bytes, dtype=np.dtype(ctx.data_type)
+    ).astype(np.float32)
+
+    timestamp_for_filename = datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = Path(f"data/{timestamp_for_filename}_collected_audio.wav")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    logger.info(f"Saving collected audio to {path}")
+    np_array_to_wav_file(full_bytes, path)
+    logger.info(f"Saved collected audio to {path}")
 
 
 async def serve_with_websocket(

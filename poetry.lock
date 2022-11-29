@@ -600,6 +600,7 @@ numpy = "*"
 torch = "*"
 tqdm = "*"
 transformers = ">=4.19.0"
+soundfile = "0.11.0"
 
 [package.extras]
 dev = ["pytest"]
