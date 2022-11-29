@@ -10,6 +10,7 @@ from typing import Final, Optional
 from typing import Union
 
 import numpy as np
+import uuid
 import websockets
 from websockets.exceptions import ConnectionClosedOK
 from whispering.schema import ParsedChunk
@@ -151,7 +152,9 @@ async def serve_with_websocket_main(websocket):
     ).astype(np.float32)
 
     timestamp_for_filename = datetime.now().strftime("%Y%m%d_%H%M%S")
-    path = Path(f"data/{timestamp_for_filename}_collected_audio.wav")
+    path = Path(
+        f"data/{timestamp_for_filename}_collected_audio_{str(uuid.uuid4())[:8]}.wav"
+    )
 
     path.parent.mkdir(parents=True, exist_ok=True)
 
