@@ -136,7 +136,8 @@ class WhisperStreamingTranscriber:
         bot_id: str,
     ) -> Optional[ParsedChunk]:
         text = self.tokenizer.decode(
-            [token for token in text_tokens if token < self.tokenizer.eot]  # type: ignore
+            [token for token in text_tokens if token < self.tokenizer.eot]
+            # type: ignore
         )
         if len(text.strip()) == 0:  # skip empty text output
             return
@@ -290,7 +291,12 @@ class WhisperStreamingTranscriber:
                 ctx.nosoeech_skip_count = None
                 force_padding = True
 
-        new_mel = log_mel_spectrogram(audio=audio)
+        try:
+            new_mel = log_mel_spectrogram(audio=audio)
+        except Exception as e:
+            logger.exception(f"Mel spectrogram error: {e}")
+            return
+
         logger.debug(f"Incoming new_mel.shape: {new_mel.shape}")
         if ctx.buffer_mel is None:
             mel = new_mel
