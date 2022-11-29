@@ -29,8 +29,8 @@ def deserialize_message(message: Union[str, bytes]) -> Dict[str, Any]:
 
 
 hard_coded_context_vars = {
-    "compression_ratio_threshold": 1.2,
-    "temperature": [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+    # "compression_ratio_threshold": 1.2,
+    # "temperature": [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
 }
 
 
