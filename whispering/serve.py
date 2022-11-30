@@ -162,6 +162,11 @@ async def serve_with_websocket_main(websocket):
     np_array_to_wav_file(full_bytes, path)
     logger.info(f"Saved collected audio to {path}")
 
+    # saving audio bytes to file
+    raw_bytes_path = str(path).replace(".wav", ".dat")
+    Path(raw_bytes_path).write_bytes(collected_audio_bytes)
+    logger.info(f"Wrote raw bytes to {raw_bytes_path}")
+
 
 async def serve_with_websocket(
     *,
