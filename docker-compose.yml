@@ -6,11 +6,6 @@ services:
     # cannot have a `container_name` as it will be scaled
     expose:
       - "5000"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [ gpu ]
 
   load-balancer:
     image: nginx:latest
