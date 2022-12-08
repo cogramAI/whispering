@@ -53,8 +53,9 @@ services:
               device_ids: [ '3' ]
               capabilities: [ gpu ]
 
-  nginx:
+  load-balancer:
     image: nginx:latest
+    container_name: nginx-whisper
     volumes:
       - ./deployment/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./data:/app/data/
