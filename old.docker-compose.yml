@@ -2,10 +2,17 @@ version: "3.9"
 
 services:
   whisper-0:
-    image: r8.im/openai/whisper@sha256:30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed
+    image: whisper:latest
     container_name: whisper-0
     expose:
       - "7000"
+    command: whispering --language ${WHISPER_LANGUAGE} --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7000 --device cuda --debug
+    volumes:
+      - ~/.cache/whisper:/root/.cache/whisper/:ro
+      - ./data:/app/data/
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
     deploy:
       resources:
         reservations:
@@ -15,10 +22,17 @@ services:
             capabilities: [gpu]
 
   whisper-1:
-    image: r8.im/openai/whisper@sha256:30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed
+    image: whisper:latest
     container_name: whisper-1
     expose:
       - "7001"
+    command: whispering --language ${WHISPER_LANGUAGE} --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7001 --device cuda --debug
+    volumes:
+      - ~/.cache/whisper:/root/.cache/whisper/:ro
+      - ./data:/app/data/
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
     deploy:
       resources:
         reservations:
@@ -28,10 +42,17 @@ services:
               capabilities: [ gpu ]
 
   whisper-2:
-    image: r8.im/openai/whisper@sha256:30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed
+    image: whisper:latest
     container_name: whisper-2
     expose:
       - "7002"
+    command: whispering --language ${WHISPER_LANGUAGE} --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7002 --device cuda --debug
+    volumes:
+      - ~/.cache/whisper:/root/.cache/whisper/:ro
+      - ./data:/app/data/
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
     deploy:
       resources:
         reservations:
@@ -41,10 +62,16 @@ services:
               capabilities: [ gpu ]
 
   whisper-3:
-    image: r8.im/openai/whisper@sha256:30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed
+    image: whisper:latest
     container_name: whisper-3
     expose:
       - "7003"
+    command: whispering --language ${WHISPER_LANGUAGE} --model ${WHISPER_MODEL} --host 0.0.0.0 --port 7003 --device cuda --debug
+    volumes:
+      - ~/.cache/whisper:/root/.cache/whisper/:ro
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
     deploy:
       resources:
         reservations:
