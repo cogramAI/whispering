@@ -6,6 +6,7 @@ services:
     # cannot have a `container_name` as it will be scaled
     expose:
       - "5000"
+    runtime: nvidia
 
   load-balancer:
     image: nginx:latest
