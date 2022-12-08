@@ -5,7 +5,7 @@ services:
     image: r8.im/openai/whisper@sha256:30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed
     container_name: whisper-0
     expose:
-      - "7000"
+      - "5000"
     deploy:
       resources:
         reservations:
@@ -18,7 +18,7 @@ services:
     image: r8.im/openai/whisper@sha256:30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed
     container_name: whisper-1
     expose:
-      - "7001"
+      - "5000"
     deploy:
       resources:
         reservations:
@@ -31,7 +31,7 @@ services:
     image: r8.im/openai/whisper@sha256:30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed
     container_name: whisper-2
     expose:
-      - "7002"
+      - "5000"
     deploy:
       resources:
         reservations:
@@ -44,7 +44,7 @@ services:
     image: r8.im/openai/whisper@sha256:30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed
     container_name: whisper-3
     expose:
-      - "7003"
+      - "5000"
     deploy:
       resources:
         reservations:
