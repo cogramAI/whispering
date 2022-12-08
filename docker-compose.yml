@@ -12,8 +12,6 @@ services:
           devices:
             - capabilities: [ gpu ]
 
-
-
   load-balancer:
     image: nginx:latest
     container_name: nginx-whisper
