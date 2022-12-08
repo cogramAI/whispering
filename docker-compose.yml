@@ -1,22 +1,9 @@
 version: "3.9"
 
 services:
-  whisper-0:
+  whisper:
     image: ${WHISPER_IMAGE}
-    container_name: whisper-0
-    expose:
-      - "5000"
-    deploy:
-      resources:
-        reservations:
-          devices:
-          - driver: nvidia
-            device_ids: ['0']
-            capabilities: [gpu]
-
-  whisper-1:
-    image: ${WHISPER_IMAGE}
-    container_name: whisper-1
+    container_name: whisper
     expose:
       - "5000"
     deploy:
@@ -24,33 +11,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: [ '1' ]
-              capabilities: [ gpu ]
-
-  whisper-2:
-    image: ${WHISPER_IMAGE}
-    container_name: whisper-2
-    expose:
-      - "5000"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: [ '2' ]
-              capabilities: [ gpu ]
-
-  whisper-3:
-    image: ${WHISPER_IMAGE}
-    container_name: whisper-3
-    expose:
-      - "5000"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: [ '3' ]
+              count: 1
               capabilities: [ gpu ]
 
   load-balancer:
