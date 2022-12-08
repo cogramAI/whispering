@@ -105,6 +105,58 @@ services:
               device_ids: [ '3' ]
               capabilities: [ gpu ]
 
+  whisper-9:
+    image: ${WHISPER_IMAGE}
+    container_name: whisper-9
+    expose:
+      - "5000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ '0' ]
+              capabilities: [ gpu ]
+
+  whisper-10:
+    image: ${WHISPER_IMAGE}
+    container_name: whisper-10
+    expose:
+      - "5000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ '1' ]
+              capabilities: [ gpu ]
+
+  whisper-11:
+    image: ${WHISPER_IMAGE}
+    container_name: whisper-11
+    expose:
+      - "5000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ '2' ]
+              capabilities: [ gpu ]
+
+  whisper-12:
+    image: ${WHISPER_IMAGE}
+    container_name: whisper-12
+    expose:
+      - "5000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ '3' ]
+              capabilities: [ gpu ]
+
   load-balancer:
     image: nginx:latest
     container_name: nginx-whisper
@@ -121,5 +173,9 @@ services:
       - whisper-6
       - whisper-7
       - whisper-8
+      - whisper-9
+      - whisper-10
+      - whisper-11
+      - whisper-12
     ports:
       - "80:8080"
