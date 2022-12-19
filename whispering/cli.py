@@ -1,30 +1,35 @@
 #!/usr/bin/env python3
-
 import argparse
 import asyncio
 import queue
 import sys
 from enum import Enum
-from logging import DEBUG, INFO, basicConfig, getLogger
+from logging import basicConfig
+from logging import DEBUG
+from logging import getLogger
+from logging import INFO
 from pathlib import Path
-from typing import Iterator, List, Optional, Union
-
-import sounddevice as sd
-import torch
-from whisper import available_models
-from whisper.audio import N_FRAMES, SAMPLE_RATE
-from whisper.tokenizer import LANGUAGES, TO_LANGUAGE_CODE
-
+from typing import Iterator
+from typing import List
+from typing import Optional
+from typing import Union
 from whispering.pbar import ProgressBar
-from whispering.schema import (
-    CURRENT_PROTOCOL_VERSION,
-    Context,
-    StdoutWriter,
-    WhisperConfig,
-)
+from whispering.schema import Context
+from whispering.schema import CURRENT_PROTOCOL_VERSION
+from whispering.schema import StdoutWriter
+from whispering.schema import WhisperConfig
 from whispering.serve import serve_with_websocket
 from whispering.transcriber import WhisperStreamingTranscriber
 from whispering.websocket_client import run_websocket_client
+
+import sounddevice as sd
+import torch
+import whisper
+from whisper import available_models
+from whisper.audio import N_FRAMES
+from whisper.audio import SAMPLE_RATE
+from whisper.tokenizer import LANGUAGES
+from whisper.tokenizer import TO_LANGUAGE_CODE
 
 logger = getLogger(__name__)
 

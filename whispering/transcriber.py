@@ -132,9 +132,12 @@ class WhisperStreamingTranscriber:
         end: float,
         text_tokens: torch.Tensor,
         result: DecodingResult,
+        speaker: str,
+        bot_id: str,
     ) -> Optional[ParsedChunk]:
         text = self.tokenizer.decode(
-            [token for token in text_tokens if token < self.tokenizer.eot]  # type: ignore
+            [token for token in text_tokens if token < self.tokenizer.eot]
+            # type: ignore
         )
         if len(text.strip()) == 0:  # skip empty text output
             return
@@ -148,6 +151,8 @@ class WhisperStreamingTranscriber:
             avg_logprob=result.avg_logprob,
             compression_ratio=result.compression_ratio,
             no_speech_prob=result.no_speech_prob,
+            speaker=speaker,
+            bot_id=bot_id,
         )
 
     def _deal_timestamp(
@@ -156,6 +161,8 @@ class WhisperStreamingTranscriber:
         result,
         segment_duration,
         ctx: Context,
+        speaker,
+        bot_id,
     ) -> Iterator[Union[ParsedChunk, int]]:
         tokens = torch.tensor(result.tokens)
         timestamp_tokens: torch.Tensor = tokens.ge(self.tokenizer.timestamp_begin)
@@ -184,6 +191,8 @@ class WhisperStreamingTranscriber:
                     end=ctx.timestamp + end_timestamp_position * self.time_precision,
                     text_tokens=sliced_tokens[1:-1],
                     result=result,
+                    speaker=speaker,
+                    bot_id=bot_id,
                 )
                 if chunk is not None:
                     yield chunk
@@ -215,6 +224,8 @@ class WhisperStreamingTranscriber:
                 end=ctx.timestamp + duration,
                 text_tokens=tokens,
                 result=result,
+                speaker=speaker,
+                bot_id=bot_id,
             )
             if chunk is not None:
                 yield chunk
@@ -226,24 +237,42 @@ class WhisperStreamingTranscriber:
             ctx.buffer_tokens = []
         logger.debug(f"Length of buffer: {len(ctx.buffer_tokens)}")
 
+    def get_vad(self, audio, total_block_number, threshold):
+
+        try:
+            return [
+                v
+                for v in self.vad(
+                    audio=audio,
+                    total_block_number=total_block_number,
+                    threshold=threshold,
+                )
+            ]
+        except Exception as e:
+            logger.exception(f"VAD error: {e}")
+            return []
+
     def transcribe(
         self,
         *,
         audio: np.ndarray,
         ctx: Context,
+        speaker: str,
+        force_padding: bool = False,
+        bot_id: Optional[str] = None,
     ) -> Iterator[ParsedChunk]:
         logger.debug(f"{len(audio)}")
-        force_padding: bool = False
+
+        if not speaker:
+            logger.error(
+                f"No speaker found in `transcribe()` function for bot ID {bot_id}"
+            )
 
         if ctx.vad_threshold > 0.0:
-            x = [
-                v
-                for v in self.vad(
-                    audio=audio,
-                    total_block_number=1,
-                    threshold=ctx.vad_threshold,
-                )
-            ]
+            x = self.get_vad(
+                audio=audio, total_block_number=1, threshold=ctx.vad_threshold
+            )
+
             if len(x) == 0:  # No speech
                 logger.debug("No speech")
                 ctx.timestamp += len(audio) / N_FRAMES * self.duration_pre_one_mel
@@ -256,13 +285,19 @@ class WhisperStreamingTranscriber:
                     or ctx.nosoeech_skip_count <= ctx.max_nospeech_skip
                 ):
                     logger.debug(
-                        f"nosoeech_skip_count: {ctx.nosoeech_skip_count} (<= {ctx.max_nospeech_skip})"
+                        f"nospeech_skip_count: {ctx.nosoeech_skip_count} "
+                        f"(<= {ctx.max_nospeech_skip})"
                     )
                     return
                 ctx.nosoeech_skip_count = None
                 force_padding = True
 
-        new_mel = log_mel_spectrogram(audio=audio)
+        try:
+            new_mel = log_mel_spectrogram(audio=audio)
+        except Exception as e:
+            logger.exception(f"Mel spectrogram error: {e}")
+            return
+
         logger.debug(f"Incoming new_mel.shape: {new_mel.shape}")
         if ctx.buffer_mel is None:
             mel = new_mel
@@ -303,7 +338,9 @@ class WhisperStreamingTranscriber:
                 ctx=ctx,
             )
             logger.debug(
-                f"Result: temperature={result.temperature:.2f}, no_speech_prob={result.no_speech_prob:.2f}, "
+                f"Result: "
+                f"temperature={result.temperature:.2f}, "
+                f"no_speech_prob={result.no_speech_prob:.2f}, "
                 f"avg_logprob={result.avg_logprob:.2f}"
             )
 
@@ -324,6 +361,8 @@ class WhisperStreamingTranscriber:
                 result=result,
                 segment_duration=segment_duration,
                 ctx=ctx,
+                speaker=speaker,
+                bot_id=bot_id,
             ):
                 if isinstance(v, int):
                     last_timestamp_position = v

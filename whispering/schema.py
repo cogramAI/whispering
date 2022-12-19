@@ -62,6 +62,8 @@ class ParsedChunk(BaseModel):
     avg_logprob: float
     compression_ratio: float
     no_speech_prob: float
+    speaker: Optional[str] = None
+    bot_id: Optional[str] = None
 
 
 class SpeechSegment(BaseModel, arbitrary_types_allowed=True):
